@@ -98,7 +98,7 @@ public:
 
 	// Return the number of bytes of data accumulated in the receive buffer
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		virtual int GetAmoutOfDataReceived();
+		virtual int64 GetAmoutOfDataReceived();
 
 	// Extract 1 byte from thre receive buffer
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")

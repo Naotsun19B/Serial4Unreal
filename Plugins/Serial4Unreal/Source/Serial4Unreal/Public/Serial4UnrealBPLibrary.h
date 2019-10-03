@@ -28,7 +28,12 @@ class USerial4UnrealBPLibrary : public UBlueprintFunctionLibrary
 {
 	GENERATED_UCLASS_BODY()
 
-		//Create a class for serial communication
-		UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		static void CreateSerialPort(USerialPort* &SerialPort);
+public:
+	// Create a class for serial communication
+	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
+		static void CreateSerialPort(int ComNumber, FPortConfig PortConfig, USerialPort* &SerialPort);
+
+	// Convert FPortConfig to FString
+	UFUNCTION(BlueprintPure, meta = (BlueprintAutoCast, DisplayName = "ToString(PortConfig)"))
+		static FString ConvertPortConfigToString(FPortConfig PortConfig);
 };

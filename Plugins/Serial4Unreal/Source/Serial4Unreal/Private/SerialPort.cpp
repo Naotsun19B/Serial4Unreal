@@ -26,9 +26,8 @@ void USerialPort::Open()
 
 	SetCommState(mComPort, &dcb);	
 
-	TCHAR com[10] = { 'C','O','M', comNumber + '0', '\0' };
-
 	//シリアルポートを開く
+	TCHAR com[10] = { 'C','O','M', comNumber + '0', '\0' };
 	mComPort = CreateFile(com, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 }
 
@@ -46,7 +45,7 @@ int USerialPort::Write(FString Buffer)
 	return numberOfPut;
 }
 
-int USerialPort::GetAmoutOfDataReceived()
+int64 USerialPort::GetAmoutOfDataReceived()
 {
 	//受信データ数を調べる
 	DWORD errors;
@@ -55,7 +54,7 @@ int USerialPort::GetAmoutOfDataReceived()
 	//受信したメッセージ長を取得する
 	int lengthOfRecieved = comStat.cbInQue;
 
-	return static_cast<int>(lengthOfRecieved);
+	return static_cast<int64>(lengthOfRecieved);
 }
 
 bool USerialPort::Read(FString& Data)
