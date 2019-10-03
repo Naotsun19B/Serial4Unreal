@@ -3,10 +3,11 @@
 #include "SerialPort.h"
 #include "Serial4Unreal/Public/Serial4Unreal.h"
 
-#include <thread>	
-
 USerialPort::~USerialPort()
 {
+	//Tickコンポーネントを破棄
+	delete mTick;
+	mTick = nullptr;
 	//シリアルポートを閉じる
 	CloseHandle(mComPort);
 }
@@ -29,6 +30,9 @@ void USerialPort::Open()
 	//シリアルポートを開く
 	TCHAR com[10] = { 'C','O','M', comNumber + '0', '\0' };
 	mComPort = CreateFile(com, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+
+	//読み取りバッファの定期確認を開始
+	mTick = new FTickProxy([this] {ReadBufferProcess(); });
 }
 
 int USerialPort::Write(FString Buffer)
@@ -72,4 +76,22 @@ bool USerialPort::Read(FString& Data)
 
 	Data = FString(UTF8_TO_TCHAR(buf));
 	return result;
+}
+
+void USerialPort::ReadBufferProcess()
+{
+	FString temp;
+	//何かしらのデータを受信した時
+	if (Read(temp)) 
+	{
+		temp = temp.Left(1);
+		OnDataRecived.Broadcast(temp);
+		mReceivedDataBuffer.Append(temp);
+	}
+	//すべてのデータの受信が完了した時
+	else if (!mReceivedDataBuffer.IsEmpty()) 
+	{
+		OnReceptionCompleted.Broadcast(mReceivedDataBuffer);
+		mReceivedDataBuffer.Empty();
+	}
 }

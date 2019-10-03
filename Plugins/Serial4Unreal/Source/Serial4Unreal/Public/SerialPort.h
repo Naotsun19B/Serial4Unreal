@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Serial4Unreal//Private/TickProxy.h"
 
 #include "AllowWindowsPlatformTypes.h"	//
 #include <Windows.h>					//マクロの多重定義を回避
@@ -63,6 +64,8 @@ public:
 		ERTSControl RtsControl;
 };
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSerialDelegate, FString, RecivedData);
+
 UCLASS(BlueprintType)
 class SERIAL4UNREAL_API USerialPort : public UObject
 {
@@ -71,6 +74,12 @@ class SERIAL4UNREAL_API USerialPort : public UObject
 private:
 	// Raw communication port config
 	HANDLE mComPort;
+
+	// A class that performs regular processing of the read buffer
+	FTickProxy* mTick;
+
+	// Temporary storage variable until all data is received
+	FString mReceivedDataBuffer;
 
 public:
 	// Communication port number
@@ -82,8 +91,17 @@ public:
 		FPortConfig  portConfig;
 
 public:
+	// Called when some data is received
+	UPROPERTY(BlueprintAssignable, Category = "Serial4Unreal")
+		FSerialDelegate OnDataRecived;
+
+	// Called when all data has been received
+	UPROPERTY(BlueprintAssignable, Category = "Serial4Unreal")
+		FSerialDelegate OnReceptionCompleted;
+
+public:
 	// Constructor
-	USerialPort() {}
+	USerialPort() {};
 
 	// Destructor -- Close communication port
 	~USerialPort();
@@ -103,4 +121,8 @@ public:
 	// Extract 1 byte from thre receive buffer
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
 		virtual bool Read(FString& Data);
+
+private:
+	// Periodic check processing of the read buffer
+	void ReadBufferProcess();
 };
