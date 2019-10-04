@@ -4,6 +4,16 @@
 
 #include "Modules/ModuleManager.h"
 
+// Avoid macro overloading
+#include "AllowWindowsPlatformTypes.h"	
+#include <Windows.h>
+#pragma warning(push)				//
+#pragma warning( disable : 4668 )	// Disable warnig (error C4668)
+#include <SetupAPI.h>				// '<macro name>' is not defined as a preprocessor macro,
+#include <winioctl.h>				// replacing with '0' for '#if/#elif'
+#pragma warning(pop)				//
+#include "HideWindowsPlatformTypes.h"	
+
 class FSerial4UnrealModule : public IModuleInterface
 {
 public:

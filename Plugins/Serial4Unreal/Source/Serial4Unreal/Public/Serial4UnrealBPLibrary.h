@@ -23,6 +23,7 @@
 *	For more info on custom blueprint nodes visit documentation:
 *	https://wiki.unrealengine.com/Custom_Blueprint_Node_Creation
 */
+
 UCLASS()
 class USerial4UnrealBPLibrary : public UBlueprintFunctionLibrary
 {
@@ -32,6 +33,10 @@ public:
 	// Create a class for serial communication
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
 		static void CreateSerialPort(int ComNumber, FPortConfig PortConfig, USerialPort* &SerialPort);
+
+	// Get a list of names and numbers of devices connected to the communication port
+	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
+		static bool GetComPortList(TMap<int, FString>& List);
 
 	// Convert FPortConfig to FString
 	UFUNCTION(BlueprintPure, meta = (BlueprintAutoCast, DisplayName = "ToString(PortConfig)"))

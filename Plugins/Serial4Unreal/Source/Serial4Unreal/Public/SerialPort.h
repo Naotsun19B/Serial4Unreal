@@ -4,12 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
-#include "Serial4Unreal//Private/TickProxy.h"
-
-#include "AllowWindowsPlatformTypes.h"	//
-#include <Windows.h>					//マクロの多重定義を回避
-#include "HideWindowsPlatformTypes.h"	//
-
+#include "Serial4Unreal/Private/TickProxy.h"
+#include "Serial4Unreal/Public/Serial4Unreal.h"
 #include "SerialPort.generated.h"
 
 UENUM(BlueprintType)
@@ -76,7 +72,7 @@ private:
 	HANDLE mComPort;
 
 	// A class that performs regular processing of the read buffer
-	FTickProxy* mTick;
+	TSharedPtr<FTickProxy> mTick;
 
 	// Temporary storage variable until all data is received
 	FString mReceivedDataBuffer;

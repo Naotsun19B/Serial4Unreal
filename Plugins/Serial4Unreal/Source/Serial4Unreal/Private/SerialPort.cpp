@@ -1,13 +1,11 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "SerialPort.h"
-#include "Serial4Unreal/Public/Serial4Unreal.h"
 
 USerialPort::~USerialPort()
 {
 	//Tickコンポーネントを破棄
-	delete mTick;
-	mTick = nullptr;
+	mTick.Reset();
 	//シリアルポートを閉じる
 	CloseHandle(mComPort);
 }
@@ -32,7 +30,7 @@ void USerialPort::Open()
 	mComPort = CreateFile(com, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
 	//読み取りバッファの定期確認を開始
-	mTick = new FTickProxy([this] {ReadBufferProcess(); });
+	mTick = MakeShareable(new FTickProxy([this] {ReadBufferProcess(); }));
 }
 
 int USerialPort::Write(FString Buffer)
