@@ -9,11 +9,12 @@ USerial4UnrealBPLibrary::USerial4UnrealBPLibrary(const FObjectInitializer& Objec
 
 }
 
-void USerial4UnrealBPLibrary::CreateSerialPort(int ComNumber, FPortConfig PortConfig, USerialPort* &SerialPort)
+void USerial4UnrealBPLibrary::CreateSerialPort(int ComNumber, FPortConfig PortConfig, bool DisableReadBufferProcess, USerialPort* &SerialPort)
 {
 	SerialPort = NewObject<USerialPort>();
 	SerialPort->comNumber = ComNumber;
 	SerialPort->portConfig = PortConfig;
+	SerialPort->bIsEnableReadBufferProcess = !DisableReadBufferProcess;
 }
 
 bool USerial4UnrealBPLibrary::GetComPortList(TMap<int, FString>& List)

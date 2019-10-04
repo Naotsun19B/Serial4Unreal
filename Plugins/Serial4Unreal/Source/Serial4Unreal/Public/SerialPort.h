@@ -86,6 +86,14 @@ public:
 	UPROPERTY(BlueprintReadWrite, Category = "Serial4Unreal")
 		FPortConfig  portConfig;
 
+	// Use read buffer process ? (When this is false, the event dispatcher is not called)
+	UPROPERTY(BlueprintReadOnly, Category = "Serial4Unreal")
+		bool bIsEnableReadBufferProcess;
+
+	// Is serial port open ?
+	UPROPERTY(BlueprintReadOnly, Category = "Serial4Unreal")
+		bool bIsOpen = false;
+
 public:
 	// Called when some data is received
 	UPROPERTY(BlueprintAssignable, Category = "Serial4Unreal")
@@ -99,12 +107,16 @@ public:
 	// Constructor
 	USerialPort() {};
 
-	// Destructor -- Close communication port
+	// Destructor
 	~USerialPort();
 
 	// Initialize port config and Open communication port
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
 		void Open();
+
+	// Close communication port
+	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
+		void Close();
 
 	// Send multiple bytes of data
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")

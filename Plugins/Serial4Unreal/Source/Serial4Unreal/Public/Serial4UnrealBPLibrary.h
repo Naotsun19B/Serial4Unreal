@@ -30,9 +30,9 @@ class USerial4UnrealBPLibrary : public UBlueprintFunctionLibrary
 	GENERATED_UCLASS_BODY()
 
 public:
-	// Create a class for serial communication
-	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		static void CreateSerialPort(int ComNumber, FPortConfig PortConfig, USerialPort* &SerialPort);
+	// Create a class for serial communication (When disable read buffer process, the event dispatcher is not called)
+	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal", meta = (AdvancedDisplay = "DisableReadBufferProcess"))
+		static void CreateSerialPort(int ComNumber, FPortConfig PortConfig, bool DisableReadBufferProcess, USerialPort* &SerialPort);
 
 	// Get a list of names and numbers of devices connected to the communication port
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")

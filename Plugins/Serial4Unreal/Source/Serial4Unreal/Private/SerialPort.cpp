@@ -4,10 +4,7 @@
 
 USerialPort::~USerialPort()
 {
-	//Tickコンポーネントを破棄
-	mTick.Reset();
-	//シリアルポートを閉じる
-	CloseHandle(mComPort);
+	if (bIsOpen) Close();
 }
 
 void USerialPort::Open()
@@ -30,11 +27,36 @@ void USerialPort::Open()
 	mComPort = CreateFile(com, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
 	//読み取りバッファの定期確認を開始
-	mTick = MakeShareable(new FTickProxy([this] {ReadBufferProcess(); }));
+	if (bIsEnableReadBufferProcess)
+		mTick = MakeShareable(new FTickProxy([this] {ReadBufferProcess(); }));
+
+	bIsOpen = true;
+}
+
+void USerialPort::Close()
+{
+	if (!bIsOpen)
+	{
+		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), comNumber);
+		return;
+	}
+
+	//Tickコンポーネントを破棄
+	if (bIsEnableReadBufferProcess) mTick.Reset();
+	//シリアルポートを閉じる
+	CloseHandle(mComPort);
+
+	bIsOpen = false;
 }
 
 int USerialPort::Write(FString Buffer)
 {
+	if (!bIsOpen) 
+	{
+		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), comNumber);
+		return -1;
+	}
+
 	//送信するデータ
 	DWORD lengthOfSent = Buffer.Len();
 	//実際に送信したデータ長
@@ -49,6 +71,12 @@ int USerialPort::Write(FString Buffer)
 
 int64 USerialPort::GetAmoutOfDataReceived()
 {
+	if (!bIsOpen)
+	{
+		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), comNumber);
+		return -1;
+	}
+
 	//受信データ数を調べる
 	DWORD errors;
 	COMSTAT comStat;
@@ -61,6 +89,12 @@ int64 USerialPort::GetAmoutOfDataReceived()
 
 bool USerialPort::Read(FString& Data)
 {
+	if (!bIsOpen)
+	{
+		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), comNumber);
+		return false;
+	}
+
 	//受信データがない場合は読み込まない
 	if (GetAmoutOfDataReceived() < 1) return false;
 
@@ -70,10 +104,10 @@ bool USerialPort::Read(FString& Data)
 	DWORD numberOfRead;
 
 	//データ受信
-	bool result = ReadFile(mComPort, buf, 1, &numberOfRead, NULL);
+	bool bResult = ReadFile(mComPort, buf, 1, &numberOfRead, NULL);
 
 	Data = FString(UTF8_TO_TCHAR(buf));
-	return result;
+	return bResult;
 }
 
 void USerialPort::ReadBufferProcess()
