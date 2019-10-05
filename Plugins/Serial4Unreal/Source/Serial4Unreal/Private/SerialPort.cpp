@@ -7,8 +7,14 @@ USerialPort::~USerialPort()
 	if (bIsOpen) Close();
 }
 
-void USerialPort::Open()
+bool USerialPort::Open()
 {
+	if(bIsOpen)
+	{
+		UE_LOG(Serial4Unreal, Warning, TEXT("The port is already open : COM%d"), comNumber);
+		return false;
+	}
+
 	//シリアルポートの構成情報
 	DCB dcb;								
 	GetCommState(mComPort, &dcb);
@@ -26,11 +32,15 @@ void USerialPort::Open()
 	TCHAR com[10] = { 'C','O','M', comNumber + '0', '\0' };
 	mComPort = CreateFile(com, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
+	//ポートが開けなかった場合
+	if (mComPort == INVALID_HANDLE_VALUE) return false;
+
 	//読み取りバッファの定期確認を開始
 	if (bIsEnableReadBufferProcess)
 		mTick = MakeShareable(new FTickProxy([this] {ReadBufferProcess(); }));
 
 	bIsOpen = true;
+	return true;
 }
 
 void USerialPort::Close()

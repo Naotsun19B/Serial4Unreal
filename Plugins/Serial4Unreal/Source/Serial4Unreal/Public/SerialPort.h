@@ -83,7 +83,7 @@ public:
 		int comNumber;
 
 	// Communication port config
-	UPROPERTY(BlueprintReadWrite, Category = "Serial4Unreal")
+	UPROPERTY(BlueprintReadOnly, Category = "Serial4Unreal")
 		FPortConfig  portConfig;
 
 	// Use read buffer process ? (When this is false, the event dispatcher is not called)
@@ -112,7 +112,7 @@ public:
 
 	// Initialize port config and Open communication port
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		void Open();
+		bool Open();
 
 	// Close communication port
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
