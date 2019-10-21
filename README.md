@@ -1,4 +1,4 @@
-# Serial4Unreal
+﻿# Serial4Unreal
 シリアル通信を行うブループリントノードを追加するプラグインです。
 
 ## USerial4UnrealBPLibrary (ブループリントファンクションライブラリ)
