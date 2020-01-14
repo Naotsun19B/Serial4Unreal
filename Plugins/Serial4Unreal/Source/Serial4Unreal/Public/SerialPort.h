@@ -41,8 +41,8 @@ struct FPortConfig
 	GENERATED_USTRUCT_BODY()
 
 public:
-	FPortConfig(int baudRate, int byteSize, EParityBit parity, EStopBit stopBits, bool outxCtsFlow, ERTSControl rtsControl)
-		: BaudRate(baudRate), ByteSize(byteSize), Parity(parity), StopBits(stopBits), OutxCtsFlow(outxCtsFlow), RtsControl(rtsControl) {}
+	FPortConfig(int InBaudRate, int InByteSize, EParityBit InParity, EStopBit InStopBits, bool InOutxCtsFlow, ERTSControl InRtsControl)
+		: BaudRate(InBaudRate), ByteSize(InByteSize), Parity(InParity), StopBits(InStopBits), OutxCtsFlow(InOutxCtsFlow), RtsControl(InRtsControl) {}
 
 	FPortConfig() : FPortConfig(9600, 8, EParityBit::PB_NoParity, EStopBit::SB_OneStopBit, false, ERTSControl::RC_Enable) {}
 
