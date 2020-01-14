@@ -1,5 +1,6 @@
-# Serial4Unreal
+﻿# Serial4Unreal
 シリアル通信を行うブループリントノードを追加するプラグインです。
+開発バージョンはUE4.22。
 
 ## USerial4UnrealBPLibrary (ブループリントファンクションライブラリ)
 
