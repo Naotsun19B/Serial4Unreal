@@ -39,6 +39,6 @@ public:
 	static bool GetComPortList(TMap<int, FString>& List);
 
 	// Convert FPortConfig to FString
-	UFUNCTION(BlueprintPure, meta = (BlueprintAutoCast, DisplayName = "ToString(PortConfig)"))
+	UFUNCTION(BlueprintPure, meta = (BlueprintAutoCast, DisplayName = "ToString(PortConfig)", CompactNodeTitle = "->"))
 	static FString ConvertPortConfigToString(FPortConfig PortConfig);
 };
