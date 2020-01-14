@@ -32,13 +32,13 @@ class USerial4UnrealBPLibrary : public UBlueprintFunctionLibrary
 public:
 	// Create a class for serial communication (When disable read buffer process, the event dispatcher is not called)
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal", meta = (AdvancedDisplay = "DisableReadBufferProcess"))
-		static void CreateSerialPort(int ComNumber, FPortConfig PortConfig, bool DisableReadBufferProcess, USerialPort* &SerialPort);
+	static void CreateSerialPort(int ComNumber, FPortConfig PortConfig, bool DisableReadBufferProcess, USerialPort* &SerialPort);
 
 	// Get a list of names and numbers of devices connected to the communication port
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		static bool GetComPortList(TMap<int, FString>& List);
+	static bool GetComPortList(TMap<int, FString>& List);
 
 	// Convert FPortConfig to FString
 	UFUNCTION(BlueprintPure, meta = (BlueprintAutoCast, DisplayName = "ToString(PortConfig)"))
-		static FString ConvertPortConfigToString(FPortConfig PortConfig);
+	static FString ConvertPortConfigToString(FPortConfig PortConfig);
 };

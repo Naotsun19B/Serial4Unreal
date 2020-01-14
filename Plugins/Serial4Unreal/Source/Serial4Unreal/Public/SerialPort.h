@@ -47,17 +47,17 @@ public:
 	FPortConfig() : FPortConfig(9600, 8, EParityBit::PB_NoParity, EStopBit::SB_OneStopBit, false, ERTSControl::RC_Enable) {}
 
 	UPROPERTY(BlueprintReadWrite, Category = "PortConfig")
-		int BaudRate;
+	int BaudRate;
 	UPROPERTY(BlueprintReadWrite, Category = "PortConfig")
-		int ByteSize;
+	int ByteSize;
 	UPROPERTY(BlueprintReadWrite, Category = "PortConfig")
-		EParityBit Parity;
+	EParityBit Parity;
 	UPROPERTY(BlueprintReadWrite, Category = "PortConfig")
-		EStopBit StopBits;
+	EStopBit StopBits;
 	UPROPERTY(BlueprintReadWrite, Category = "PortConfig")
-		bool OutxCtsFlow;
+	bool OutxCtsFlow;
 	UPROPERTY(BlueprintReadWrite, Category = "PortConfig")
-		ERTSControl RtsControl;
+	ERTSControl RtsControl;
 };
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FSerialDelegate, FString, RecivedData);
@@ -69,66 +69,66 @@ class SERIAL4UNREAL_API USerialPort : public UObject
 	
 private:
 	// Raw communication port config
-	HANDLE mComPort;
+	void* ComPort;
 
 	// A class that performs regular processing of the read buffer
-	TSharedPtr<FTickProxy> mTick;
+	TSharedPtr<FTickProxy> Tick;
 
 	// Temporary storage variable until all data is received
-	FString mReceivedDataBuffer;
+	FString ReceivedDataBuffer;
 
 public:
 	// Communication port number
-	UPROPERTY(BlueprintReadOnly, Category = "Serial4Unreal")
-		int comNumber;
+	UPROPERTY(BlueprintReadOnly, Category = "Serial4Unreal", meta = (ClampMin = -1))
+	int ComNumber;
 
 	// Communication port config
 	UPROPERTY(BlueprintReadOnly, Category = "Serial4Unreal")
-		FPortConfig  portConfig;
+	FPortConfig  PortConfig;
 
 	// Use read buffer process ? (When this is false, the event dispatcher is not called)
 	UPROPERTY(BlueprintReadOnly, Category = "Serial4Unreal")
-		bool bIsEnableReadBufferProcess;
+	bool bIsEnableReadBufferProcess;
 
 	// Is serial port open ?
 	UPROPERTY(BlueprintReadOnly, Category = "Serial4Unreal")
-		bool bIsOpen = false;
+	bool bIsOpen;
 
 public:
 	// Called when some data is received
 	UPROPERTY(BlueprintAssignable, Category = "Serial4Unreal")
-		FSerialDelegate OnDataRecived;
+	FSerialDelegate OnDataRecived;
 
 	// Called when all data has been received
 	UPROPERTY(BlueprintAssignable, Category = "Serial4Unreal")
-		FSerialDelegate OnReceptionCompleted;
+	FSerialDelegate OnReceptionCompleted;
 
 public:
 	// Constructor
-	USerialPort() {};
+	USerialPort();
 
 	// Destructor
 	~USerialPort();
 
 	// Initialize port config and Open communication port
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		bool Open();
+	bool Open();
 
 	// Close communication port
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		void Close();
+	void Close();
 
 	// Send multiple bytes of data
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		virtual int Write(FString Buffer);
+	virtual int Write(FString Buffer);
 
 	// Return the number of bytes of data accumulated in the receive buffer
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		virtual int64 GetAmoutOfDataReceived();
+	virtual int64 GetAmoutOfDataReceived();
 
 	// Extract 1 byte from thre receive buffer
 	UFUNCTION(BlueprintCallable, Category = "Serial4Unreal")
-		virtual bool Read(FString& Data);
+	virtual bool Read(FString& Data);
 
 private:
 	// Periodic check processing of the read buffer

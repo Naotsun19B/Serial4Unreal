@@ -2,43 +2,66 @@
 
 #include "SerialPort.h"
 
+// Avoid macro overloading
+#include "AllowWindowsPlatformTypes.h"	
+#include <Windows.h>
+#include "HideWindowsPlatformTypes.h"	
+
+USerialPort::USerialPort()
+	: Tick(nullptr)
+	, ReceivedDataBuffer("")
+	, ComNumber(-1)
+	, bIsEnableReadBufferProcess(true)
+	, bIsOpen(false)
+{
+
+}
+
 USerialPort::~USerialPort()
 {
-	if (bIsOpen) Close();
+	if (bIsOpen)
+	{
+		Close();
+	}
 }
 
 bool USerialPort::Open()
 {
 	if(bIsOpen)
 	{
-		UE_LOG(Serial4Unreal, Warning, TEXT("The port is already open : COM%d"), comNumber);
+		UE_LOG(Serial4Unreal, Warning, TEXT("The port is already open : COM%d"), ComNumber);
 		return false;
 	}
 
 	//シリアルポートの構成情報
-	DCB dcb;								
-	GetCommState(mComPort, &dcb);
+	DCB Dcb;								
+	GetCommState(ComPort, &Dcb);
 
-	dcb.BaudRate = portConfig.BaudRate;							//速度
-	dcb.ByteSize = portConfig.ByteSize;							//データ長
-	dcb.Parity = static_cast<int>(portConfig.Parity);			//パリティ
-	dcb.StopBits = static_cast<int>(portConfig.StopBits);		//ストップビット長
-	dcb.fOutxCtsFlow = portConfig.OutxCtsFlow;					//送信時CTSフロー
-	dcb.fRtsControl = static_cast<int>(portConfig.RtsControl);	//RTSフロー
+	Dcb.BaudRate = PortConfig.BaudRate;							//速度
+	Dcb.ByteSize = PortConfig.ByteSize;							//データ長
+	Dcb.Parity = static_cast<int>(PortConfig.Parity);			//パリティ
+	Dcb.StopBits = static_cast<int>(PortConfig.StopBits);		//ストップビット長
+	Dcb.fOutxCtsFlow = PortConfig.OutxCtsFlow;					//送信時CTSフロー
+	Dcb.fRtsControl = static_cast<int>(PortConfig.RtsControl);	//RTSフロー
 
-	SetCommState(mComPort, &dcb);	
+	SetCommState(ComPort, &Dcb);	
 
 	//シリアルポートを開く
-	TCHAR com[10] = { 'C','O','M', comNumber + '0', '\0' };
-	mComPort = CreateFile(com, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+	TCHAR ComName[10] = { 'C','O','M', ComNumber + '0', '\0' };
+	ComPort = CreateFile(ComName, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
 
 	//ポートが開けなかった場合
-	if (mComPort == INVALID_HANDLE_VALUE) return false;
+	if (ComPort == INVALID_HANDLE_VALUE)
+	{
+		return false;
+	}
 
 	//読み取りバッファの定期確認を開始
 	if (bIsEnableReadBufferProcess)
-		mTick = MakeShareable(new FTickProxy([this] {ReadBufferProcess(); }));
-
+	{
+		Tick = MakeShareable(new FTickProxy([this] {ReadBufferProcess(); }));
+	}
+		
 	bIsOpen = true;
 	return true;
 }
@@ -47,14 +70,18 @@ void USerialPort::Close()
 {
 	if (!bIsOpen)
 	{
-		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), comNumber);
+		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), ComNumber);
 		return;
 	}
 
 	//Tickコンポーネントを破棄
-	if (bIsEnableReadBufferProcess) mTick.Reset();
+	if (bIsEnableReadBufferProcess)
+	{
+		Tick.Reset();
+	}
+
 	//シリアルポートを閉じる
-	CloseHandle(mComPort);
+	CloseHandle(ComPort);
 
 	bIsOpen = false;
 }
@@ -63,77 +90,80 @@ int USerialPort::Write(FString Buffer)
 {
 	if (!bIsOpen) 
 	{
-		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), comNumber);
+		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), ComNumber);
 		return -1;
 	}
 
 	//送信するデータ
-	DWORD lengthOfSent = Buffer.Len();
+	DWORD LengthOfSent = Buffer.Len();
 	//実際に送信したデータ長
-	DWORD numberOfPut;
+	DWORD NumberOfPut;
 
-	char* data = TCHAR_TO_ANSI(*Buffer);
+	char* Data = TCHAR_TO_ANSI(*Buffer);
 	//ポートへ送信
-	WriteFile(mComPort, data, lengthOfSent, &numberOfPut, NULL);
+	WriteFile(ComPort, Data, LengthOfSent, &NumberOfPut, NULL);
 
-	return numberOfPut;
+	return NumberOfPut;
 }
 
 int64 USerialPort::GetAmoutOfDataReceived()
 {
 	if (!bIsOpen)
 	{
-		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), comNumber);
+		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), ComNumber);
 		return -1;
 	}
 
 	//受信データ数を調べる
-	DWORD errors;
-	COMSTAT comStat;
-	ClearCommError(mComPort, &errors, &comStat);
+	DWORD Errors;
+	COMSTAT ComStat;
+	ClearCommError(ComPort, &Errors, &ComStat);
 	//受信したメッセージ長を取得する
-	int lengthOfRecieved = comStat.cbInQue;
+	int LengthOfRecieved = ComStat.cbInQue;
 
-	return static_cast<int64>(lengthOfRecieved);
+	return static_cast<int64>(LengthOfRecieved);
 }
 
 bool USerialPort::Read(FString& Data)
 {
 	if (!bIsOpen)
 	{
-		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), comNumber);
+		UE_LOG(Serial4Unreal, Error, TEXT("The port is not open : COM%d"), ComNumber);
 		return false;
 	}
 
 	//受信データがない場合は読み込まない
-	if (GetAmoutOfDataReceived() < 1) return false;
+	if (GetAmoutOfDataReceived() < 1)
+	{
+		return false;
+	}
 
 	//受信データ格納用
-	char buf[1];
+	char Buffer[1];
 	// 実際に受信したバイト数
-	DWORD numberOfRead;
+	DWORD NumberOfRead;
 
 	//データ受信
-	bool bResult = ReadFile(mComPort, buf, 1, &numberOfRead, NULL);
+	bool bResult = ReadFile(ComPort, Buffer, 1, &NumberOfRead, NULL);
 
-	Data = FString(UTF8_TO_TCHAR(buf));
+	Data = FString(UTF8_TO_TCHAR(Buffer));
 	return bResult;
 }
 
 void USerialPort::ReadBufferProcess()
 {
-	FString temp;
+	FString TempBuffer;
 	//何かしらのデータを受信した時
-	if (Read(temp)) 
+	if (Read(TempBuffer)) 
 	{
-		temp = temp.Left(1);
-		OnDataRecived.Broadcast(temp);
-		mReceivedDataBuffer.Append(temp);
+		TempBuffer = TempBuffer.Left(1);
+		OnDataRecived.Broadcast(TempBuffer);
+		ReceivedDataBuffer.Append(TempBuffer);
 	}
 	//すべてのデータの受信が完了した時
-	else if (!mReceivedDataBuffer.IsEmpty()) 
+	else if (!ReceivedDataBuffer.IsEmpty()) 
 	{
-		OnReceptionCompleted.Broadcast(mReceivedDataBuffer);
-		mReceivedDataBuffer.Empty();
+		OnReceptionCompleted.Broadcast(ReceivedDataBuffer);
+		ReceivedDataBuffer.Empty();
 	}
 }
